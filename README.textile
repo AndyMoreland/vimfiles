@@ -2,7 +2,7 @@ h1. Usage
 
 In your home directory, run:
 <pre><code>
-git clone git://github.com/scrooloose/vimfiles.git .vim
+git clone git://github.com/AndyMoreland/vimfiles.git
 mv Projects/vimfiles .vim
 ln -s .vim/.vimrc .vimrc
 </code></pre>
