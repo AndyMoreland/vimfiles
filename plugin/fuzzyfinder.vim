@@ -329,7 +329,7 @@
 "
 "   2.0:
 "     - Added the tag mode.
-"     - Added the tagged-file mode.
+"     - Added the bagged-file mode.
 "     - Added :FuzzyFinderRemoveCache command.
 "     - Restructured the option system. many options are changed names or
 "       default values of some options.
@@ -1532,10 +1532,10 @@ let g:FuzzyFinderOptions.File.smart_bs = 1
 " mode.
 let g:FuzzyFinderOptions.File.switch_order = 20
 " [File Mode] The items matching this are excluded from the completion list.
-let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
+let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)|.*vendor.*'
 " [File Mode] If a number of matched items was over this, the completion
 " process is aborted.
-let g:FuzzyFinderOptions.File.matching_limit = 200
+let g:FuzzyFinderOptions.File.matching_limit = 100
 "-----------------------------------------------------------------------------
 " [Directory Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Dir.mode_available = 1

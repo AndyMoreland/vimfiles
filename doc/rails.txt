@@ -1,4 +1,4 @@
-*rails.txt*	Plugin for working with Ruby on Rails applications
+ rails.txt*	Plugin for working with Ruby on Rails applications
 
 Author: Tim Pope <vimNOSPAM@tpope.info>		|rails-plugin-author|
 
@@ -28,7 +28,6 @@ Author: Tim Pope <vimNOSPAM@tpope.info>		|rails-plugin-author|
 |rails-global-settings| 	Global Settings
 |rails-about|			About rails.vim
 |rails-license|			    License
-
 This plugin is only available if 'compatible' is not set.
 
 {Vi does not have any of this}

@@ -152,16 +152,16 @@ if !has("gui")
 else
     if has("gui_gnome")
         set term=gnome-256color
-        colorscheme desert
+        colorscheme twilight
     else
         set t_Co=256
-        colorscheme vibrantink
+        colorscheme twilight
         set guitablabel=%M%t
         set lines=40
         set columns=115
     endif
     if has("gui_mac") || has("gui_macvim")
-        set guifont=Monaco:h16
+        set guifont=Monaco:h14
     endif
     if has("gui_win32") || has("gui_win32s")
         set guifont=Consolas:h12
@@ -220,3 +220,4 @@ function! s:HighlightExcessColumns(width)
         echomsg "HighlightExcessColumns: set a &textwidth, or pass one in"
     endif
 endfunction
+set nu
