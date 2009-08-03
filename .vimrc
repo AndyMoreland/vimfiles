@@ -14,9 +14,6 @@ set showmode    "show current mode down the bottom
 set incsearch   "find the next match as we type the search
 set hlsearch    "hilight searches by default
 
-"set nowrap      "dont wrap lines
-"set linebreak   "wrap lines at convenient points
-
 "statusline setup
 set statusline=%f       "tail of the filename
 
@@ -223,3 +220,6 @@ endfunction
 set nu
 set iskeyword+=?,!
 autocmd VimEnter * cd %:p:h
+map <D-r> :!ruby %<CR>
+map <D-e> :!touch tmp/restart.txt<CR><CR>
+set fuopt=maxhorz,maxvert
