@@ -14,7 +14,6 @@ set showmode    "show current mode down the bottom
 set incsearch   "find the next match as we type the search
 set hlsearch    "hilight searches by default
 
-
 "statusline setup
 set statusline=%f       "tail of the filename
 
@@ -162,6 +161,8 @@ endfunction
 "lines that are "too long". where "too long" is defined by &textwidth or an
 "arg passed to the command
 set nu
+set iskeyword+=?,!
+autocmd VimEnter * cd %:p:h
 map <D-r> :!ruby %<CR>
 map <D-e> :!touch tmp/restart.txt<CR><CR>
 set fuopt=maxhorz,maxvert
