@@ -33,13 +33,6 @@ set statusline+=%y      "filetype
 set statusline+=%r      "read only flag
 set statusline+=%m      "modified flag
 
-"display a warning if &et is wrong, or we have mixed-indenting
-set statusline+=%#error#
-set statusline+=%{StatuslineTabWarning()}
-set statusline+=%*
-
-set statusline+=%{StatuslineTrailingSpaceWarning()}
-
 "display a warning if &paste is set
 set statusline+=%#error#
 set statusline+=%{&paste?'[paste]':''}
@@ -52,23 +45,6 @@ set statusline+=%l/%L   "cursor line/total lines
 set statusline+=\ %P    "percent through file
 set laststatus=2
 
-"recalculate the trailing whitespace warning when idle, and after saving
-autocmd cursorhold,bufwritepost * unlet! b:statusline_trailing_space_warning
-
-"return '[\s]' if trailing white space is detected
-"return '' otherwise
-function! StatuslineTrailingSpaceWarning()
-    if !exists("b:statusline_trailing_space_warning")
-        if search('\s\+$', 'nw') != 0
-            let b:statusline_trailing_space_warning = '[\s]'
-        else
-            let b:statusline_trailing_space_warning = ''
-        endif
-    endif
-    return b:statusline_trailing_space_warning
-endfunction
-
-
 "return the syntax highlight group under the cursor ''
 function! StatuslineCurrentHighlight()
     let name = synIDattr(synID(line('.'),col('.'),1),'name')
@@ -79,31 +55,9 @@ function! StatuslineCurrentHighlight()
     endif
 endfunction
 
-"recalculate the tab warning flag when idle and after writing
-autocmd cursorhold,bufwritepost * unlet! b:statusline_tab_warning
-
-"return '[&et]' if &et is set wrong
-"return '[mixed-indenting]' if spaces and tabs are used to indent
-"return an empty string if everything is fine
-function! StatuslineTabWarning()
-    if !exists("b:statusline_tab_warning")
-        let tabs = search('^\t', 'nw') != 0
-        let spaces = search('^ ', 'nw') != 0
-
-        if tabs && spaces
-            let b:statusline_tab_warning =  '[mixed-indenting]'
-        elseif (spaces && !&et) || (tabs && &et)
-            let b:statusline_tab_warning = '[&et]'
-        else
-            let b:statusline_tab_warning = ''
-        endif
-    endif
-    return b:statusline_tab_warning
-endfunction
-
 "indent settings
-set shiftwidth=4
-set softtabstop=4
+set shiftwidth=2
+set softtabstop=2
 set expandtab
 set autoindent
 
@@ -139,7 +93,7 @@ set mouse=a
 set ttymouse=xterm2
 
 "tell the term has 256 colors
-set t_Co=256
+set t_Co=16
 
 "hide buffers when not displayed
 set hidden
@@ -161,12 +115,10 @@ else
     if has("gui_mac") || has("gui_macvim")
         set guifont=Monaco:h14
     endif
-    if has("gui_win32") || has("gui_win32s")
-        set guifont=Consolas:h12
-    endif
 endif
 
 nmap <silent> <Leader>p :NERDTreeToggle<CR>
+nmap <silent> <Leader>t :TlistToggle<CR>
 
 "make <c-l> clear the highlight as well as redraw
 nnoremap <C-L> :nohls<CR><C-L>
@@ -183,8 +135,8 @@ noremap Q gq
 
 "make Y consistent with C and D
 nnoremap Y y$
-
 "visual search mappings
+
 function! s:VSetSearch()
     let temp = @@
     norm! gvy
@@ -209,15 +161,6 @@ endfunction
 "define :HighlightExcessColumns command to highlight the offending parts of
 "lines that are "too long". where "too long" is defined by &textwidth or an
 "arg passed to the command
-command! -nargs=? HighlightExcessColumns call s:HighlightExcessColumns('<args>')
-function! s:HighlightExcessColumns(width)
-    let targetWidth = a:width != '' ? a:width : &textwidth
-    if targetWidth > 0
-        exec 'match Todo /\%>' . (targetWidth+1) . 'v/'
-    else
-        echomsg "HighlightExcessColumns: set a &textwidth, or pass one in"
-    endif
-endfunction
 set nu
 map <D-r> :!ruby %<CR>
 map <D-e> :!touch tmp/restart.txt<CR><CR>
