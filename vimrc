@@ -115,7 +115,9 @@ else
         set guifont=Monaco:h14
     endif
 endif
-
+set nu
+colorscheme twilight
+set guifont=Monaco:h14
 nmap <silent> <Leader>p :NERDTreeToggle<CR>
 nmap <silent> <Leader>t :TlistToggle<CR>
 
