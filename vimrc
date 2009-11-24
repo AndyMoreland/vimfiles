@@ -171,3 +171,6 @@ map <D-1> :b#<CR><CR>
 set fuopt=maxhorz,maxvert
 command DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis | wincmd p | diffthis
 set wrap
+set shell=/bin/bash
+autocmd FileType html source ~/.vim/scripts/sparkup.vim
+
