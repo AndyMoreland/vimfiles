@@ -1,73 +1,107 @@
-" Vim indent file
-" Language:	HAML
-" Maintainer:	Tim Pope <vimNOSPAM@tpope.info>
-" Last Change:	2008 Sep 11
+" Vim syntax file
+" Language:     Haml
+" Maintainer:   Tim Pope <vimNOSPAM@tpope.info>
+" Filenames:    *.haml
 
-if exists("b:did_indent")
-  finish
-endif
-runtime! indent/ruby.vim
-unlet! b:did_indent
-let b:did_indent = 1
-
-setlocal autoindent sw=2 et
-setlocal indentexpr=GetHamlIndent()
-setlocal indentkeys=o,O,*<Return>,},],0),!^F,=end,=else,=elsif,=rescue,=ensure,=when
-
-" Only define the function once.
-if exists("*GetHamlIndent")
+if exists("b:current_syntax")
   finish
 endif
 
-let s:attributes = '\%({.\{-\}}\|\[.\{-\}\]\)'
-let s:tag = '\%([%.#][[:alnum:]_-]\+\|'.s:attributes.'\)*[<>]*'
-
-if !exists('g:haml_self_closing_tags')
-  let g:haml_self_closing_tags = 'meta|link|img|hr|br'
+if !exists("main_syntax")
+  let main_syntax = 'haml'
 endif
+let b:ruby_no_expensive = 1
 
-function! GetHamlIndent()
-  let lnum = prevnonblank(v:lnum-1)
-  if lnum == 0
-    return 0
-  endif
-  let line = substitute(getline(lnum),'\s\+$','','')
-  let cline = substitute(substitute(getline(v:lnum),'\s\+$','',''),'^\s\+','','')
-  let lastcol = strlen(line)
-  let line = substitute(line,'^\s\+','','')
-  let indent = indent(lnum)
-  let cindent = indent(v:lnum)
-  if cline =~# '\v^-\s*%(elsif|else|when)>'
-    let indent = cindent < indent ? cindent : indent - &sw
-  endif
-  let increase = indent + &sw
-  if indent == indent(lnum)
-    let indent = cindent <= indent ? -1 : increase
-  endif
-  "let indent = indent == indent(lnum) ? -1 : indent
-  "let indent = indent > indent(lnum) + &sw ? indent(lnum) + &sw : indent
+runtime! syntax/html.vim
+unlet! b:current_syntax
+silent! syn include @hamlSassTop syntax/sass.vim
+unlet! b:current_syntax
+syn include @hamlRubyTop syntax/ruby.vim
 
-  let group = synIDattr(synID(lnum,lastcol,1),'name')
+syn case match
 
-  if line =~ '^!!!'
-    return indent
-  elseif line =~ '^/\%(\[[^]]*\]\)\=$'
-    return increase
-  elseif line =~ '^:'
-    return increase
-  elseif line =~ '^'.s:tag.'[=~-]\s*\%(\%(if\|else\|elsif\|unless\|case\|when\|while\|until\|for\|begin\|module\|class\|def\)\>\%(.*\<end\>\)\@!\|.*do\%(\s*|[^|]*|\)\=\s*$\)'
-    return increase
-  elseif line == '-#'
-    return increase
-  elseif group =~? '\v^(hamlSelfCloser)$' || line =~? '^%\v%('.g:haml_self_closing_tags.')>'
-    return indent
-  elseif group =~? '\v^%(hamlTag|hamlAttributesDelimiter|hamlObjectDelimiter|hamlClass|hamlId|htmlTagName|htmlSpecialTagName)$'
-    return increase
-  elseif synIDattr(synID(v:lnum,1,1),'name') ==? 'hamlRubyFilter'
-    return GetRubyIndent()
-  else
-    return indent
-  endif
-endfunction
+syn region  rubyCurlyBlock   start="{" end="}" contains=@hamlRubyTop contained containedin=rubyInterpolation
+syn cluster hamlRubyTop add=rubyCurlyBlock
+
+syn cluster hamlComponent    contains=hamlAttributes,hamlAttributesHash,hamlClassChar,hamlIdChar,hamlObject,hamlDespacer,hamlSelfCloser,hamlRuby,hamlPlainChar,hamlInterpolatable
+syn cluster hamlEmbeddedRuby contains=hamlAttributesHash,hamlObject,hamlRuby,hamlRubyFilter
+syn cluster hamlTop          contains=hamlBegin,hamlPlainFilter,hamlRubyFilter,hamlSassFilter,hamlComment,hamlHtmlComment
+
+syn match   hamlBegin "^\s*\%([<>]\|&[^=~ ]\)\@!" nextgroup=hamlTag,hamlClassChar,hamlIdChar,hamlRuby,hamlPlainChar,hamlInterpolatable
+
+syn match   hamlTag        "%\w\+" contained contains=htmlTagName,htmlSpecialTagName nextgroup=@hamlComponent
+syn region  hamlAttributes     matchgroup=hamlAttributesDelimiter start="(" end=")" contained contains=htmlArg,hamlAttributeString,hamlAttributeVariable,htmlEvent,htmlCssDefinition nextgroup=@hamlComponent
+syn region  hamlAttributesHash matchgroup=hamlAttributesDelimiter start="{" end="}" contained contains=@hamlRubyTop nextgroup=@hamlComponent
+syn region  hamlObject         matchgroup=hamlObjectDelimiter     start="\[" end="\]" contained contains=@hamlRubyTop nextgroup=@hamlComponent
+syn match   hamlDespacer "[<>]" contained nextgroup=hamlDespacer,hamlSelfCloser,hamlRuby,hamlPlainChar,hamlInterpolatable
+syn match   hamlSelfCloser "/" contained
+syn match   hamlClassChar "\." contained nextgroup=hamlClass
+syn match   hamlIdChar "#{\@!" contained nextgroup=hamlId
+syn match   hamlClass "\%(\w\|-\)\+" contained nextgroup=@hamlComponent
+syn match   hamlId    "\%(\w\|-\)\+" contained nextgroup=@hamlComponent
+syn region  hamlDocType start="^\s*!!!" end="$"
+
+syn region  hamlRuby   matchgroup=hamlRubyOutputChar start="[!&]\==\|\~" end="$" contained contains=@hamlRubyTop keepend
+syn region  hamlRuby   matchgroup=hamlRubyChar       start="-"           end="$" contained contains=@hamlRubyTop keepend
+syn match   hamlPlainChar "\\" contained
+syn region hamlInterpolatable matchgroup=hamlInterpolatableChar start="!\===\|!=\@!" end="$" keepend contained contains=hamlInterpolation,hamlInterpolationEscape,@hamlHtmlTop
+syn region hamlInterpolatable matchgroup=hamlInterpolatableChar start="&==\|&=\@!"   end="$" keepend contained contains=hamlInterpolation,hamlInterpolationEscape
+syn region hamlInterpolation matchgroup=hamlInterpolationDelimiter start="#{" end="}" contains=@hamlRubyTop
+syn match  hamlInterpolationEscape "\\\@<!\%(\\\\\)*\\\%(\\\ze#{\|#\ze{\)"
+syn region hamlErbInterpolation matchgroup=hamlInterpolationDelimiter start="<%[=-]\=" end="-\=%>" contained contains=@hamlRubyTop
+
+syn region  hamlAttributeString start=+\%(=\s*\)\@<='+ skip=+\%(\\\\\)*\\'+ end=+'+ contains=hamlInterpolation,hamlInterpolationEscape
+syn region  hamlAttributeString start=+\%(=\s*\)\@<="+ skip=+\%(\\\\\)*\\"+ end=+"+ contains=hamlInterpolation,hamlInterpolationEscape
+syn match   hamlAttributeVariable "\%(=\s*\)\@<=\%(@@\=\|\$\)\=\w\+" contained
+
+syn match   hamlHelper  "\<action_view?\|\<block_is_haml?\|\<is_haml?\|\.\@<!\<flatten" contained containedin=@hamlEmbeddedRuby,@hamlRubyTop,rubyInterpolation
+syn keyword hamlHelper   capture_haml escape_once find_and_preserve haml_concat haml_indent haml_tag html_attrs html_esape init_haml_helpers list_of non_haml precede preserve succeed surround tab_down tab_up page_class contained containedin=@hamlEmbeddedRuby,@hamlRubyTop,rubyInterpolation
+
+syn cluster hamlHtmlTop contains=@htmlTop,htmlBold,htmlItalic,htmlUnderline
+syn region  hamlPlainFilter      matchgroup=hamlFilter start="^\z(\s*\):\%(plain\|preserve\|redcloth\|textile\|markdown\|maruku\)\s*$" end="^\%(\z1 \| *$\)\@!" contains=@hamlHtmlTop,rubyInterpolation
+syn region  hamlEscapedFilter    matchgroup=hamlFilter start="^\z(\s*\):\%(escaped\|cdata\)\s*$"    end="^\%(\z1 \| *$\)\@!" contains=rubyInterpolation
+syn region  hamlErbFilter        matchgroup=hamlFilter start="^\z(\s*\):erb\s*$"        end="^\%(\z1 \| *$\)\@!" contains=@hamlHtmlTop,hamlErbInterpolation
+syn region  hamlRubyFilter       matchgroup=hamlFilter start="^\z(\s*\):ruby\s*$"       end="^\%(\z1 \| *$\)\@!" contains=@hamlRubyTop
+syn region  hamlJavascriptFilter matchgroup=hamlFilter start="^\z(\s*\):javascript\s*$" end="^\%(\z1 \| *$\)\@!" contains=@htmlJavaScript,rubyInterpolation keepend
+syn region  hamlSassFilter       matchgroup=hamlFilter start="^\z(\s*\):sass\s*$"       end="^\%(\z1 \| *$\)\@!" contains=@hamlSassTop
+
+syn region  hamlJavascriptBlock start="^\z(\s*\)%script" nextgroup=@hamlComponent,hamlError end="^\%(\z1 \| *$\)\@!" contains=@hamlTop,@htmlJavaScript keepend
+syn region  hamlCssBlock        start="^\z(\s*\)%style" nextgroup=@hamlComponent,hamlError  end="^\%(\z1 \| *$\)\@!" contains=@hamlTop,@htmlCss keepend
+syn match   hamlError "\$" contained
+
+syn region  hamlComment     start="^\z(\s*\)-#" end="^\%(\z1 \| *$\)\@!" contains=rubyTodo
+syn region  hamlHtmlComment start="^\z(\s*\)/"  end="^\%(\z1 \| *$\)\@!" contains=@hamlTop,rubyTodo
+syn match   hamlIEConditional "\%(^\s*/\)\@<=\[if\>[^]]*]" contained containedin=hamlHtmlComment
+
+hi def link hamlSelfCloser             Special
+hi def link hamlDespacer               Special
+hi def link hamlClassChar              Special
+hi def link hamlIdChar                 Special
+hi def link hamlTag                    Special
+hi def link hamlClass                  Type
+hi def link hamlId                     Identifier
+hi def link hamlPlainChar              Special
+hi def link hamlInterpolatableChar     hamlRubyChar
+hi def link hamlRubyOutputChar         hamlRubyChar
+hi def link hamlRubyChar               Special
+hi def link hamlInterpolationDelimiter Delimiter
+hi def link hamlInterpolationEscape    Special
+hi def link hamlAttributeString        String
+hi def link hamlAttributeVariable      Identifier
+hi def link hamlDocType                PreProc
+hi def link hamlFilter                 PreProc
+hi def link hamlAttributesDelimiter    Delimiter
+hi def link hamlObjectDelimiter        Delimiter
+hi def link hamlHelper                 Function
+hi def link hamlHtmlComment            hamlComment
+hi def link hamlComment                Comment
+hi def link hamlIEConditional          SpecialComment
+hi def link hamlError                  Error
+
+let b:current_syntax = "haml"
+
+if main_syntax == "haml"
+  unlet main_syntax
+endif
 
 " vim:set sw=2:
